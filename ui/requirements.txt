@@ -1,0 +1,6 @@
+# The web UI's container (ui/Dockerfile). It only calls the deployed agent, so it needs
+# the Vertex AI SDK but none of the agent's own packages. Versions match the local setup.
+streamlit==1.51.0
+pandas==2.2.3
+python-dotenv==1.1.1
+google-cloud-aiplatform[agent_engines]==2.4.0

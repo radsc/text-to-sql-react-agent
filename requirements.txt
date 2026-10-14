@@ -1,0 +1,17 @@
+# Local development. The agent's runtime dependencies are shared with the Agent Engine
+# deployment, so local versions match the ones the agent is pickled with.
+-r deploy/requirements.txt
+
+# API
+fastapi>=0.115
+uvicorn[standard]>=0.30
+
+# Web UI for the deployed agent (ui/app.py)
+streamlit>=1.40
+
+# Dev
+pytest>=8.3
+ruff>=0.6
+
+# Only needed for a non-default EMBEDDING_MODEL (pulls in PyTorch):
+# sentence-transformers>=3.0
