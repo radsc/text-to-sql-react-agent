@@ -102,7 +102,7 @@ One-time GCP setup:
 1. Enable the Vertex AI, Cloud SQL Admin and Secret Manager APIs, and create a `gs://` staging bucket.
 2. Move the MySQL database to Cloud SQL, and create a read-only user for it.
 3. Create the secrets `sql-agent-database-url` (`mysql+pymysql://readonly_user:PASSWORD@/customer_insights`) and the LLM key: `openai-api-key` (the default provider) or `anthropic-api-key`.
-4. Grant the Agent Engine service agent (`service-PROJECT_NUMBER@gcp-sa-aiplatform-re.iam.gserviceaccount.com`) these roles: `roles/cloudsql.client` and `roles/secretmanager.secretAccessor`. For `LLM_PROVIDER=vertex`, also grant `roles/aiplatform.user` and enable the Claude model in Model Garden.
+4. Grant the Agent Engine service agent (`service-PROJECT_NUMBER@gcp-sa-aiplatform-re.iam.gserviceaccount.com`) these roles: `roles/cloudsql.client` and `roles/secretmanager.secretAccessor`. For `LLM_PROVIDER=vertex`, also grant `roles/aiplatform.user`.
 
 ```bash
 pip install "google-cloud-aiplatform[agent_engines]"
@@ -119,20 +119,6 @@ Settings used by the deployment:
 - `LLM_PROVIDER=vertex` with `VERTEX_MODEL` and `VERTEX_LOCATION` calls Claude on Vertex AI with the service account instead of an API key.
 - `CHROMA_PERSIST_DIR=:memory:`: each worker process keeps its own in-memory index, rebuilt on startup. A replica runs several workers, and if they share one on-disk index they collide while creating it.
 
-Lessons from the first deployment:
-
-- **Pin langgraph's sub-packages.** `langgraph-prebuilt` and `langgraph-checkpoint` are pinned in `deploy/requirements.txt`. Unpinned, the runtime installed a newer `langgraph-prebuilt` that doesn't work with `langgraph` 1.0.2, and `set_up()` failed with `ImportError: ExecutionInfo`. Your local run can't catch this, because your machine already has a matching pair.
-- **Several workers start at once.** Anything `set_up()` writes to disk must be safe to run concurrently. `set_up()` builds the index under a file lock.
-- **A failed create deletes the engine.** `--update` then returns `404`, so run `deploy` again without `--update`.
-- **Each deploy replaces the engine in place** and doesn't create a revision. Deploy history is in Cloud Audit Logs (`protoPayload.methodName:"ReasoningEngine"`).
-
-Calling the deployed agent without Python, through its REST endpoint:
-
-```bash
-curl -X POST -H "Authorization: Bearer $(gcloud auth print-access-token)" -H "Content-Type: application/json" \
-  "https://REGION-aiplatform.googleapis.com/v1/projects/PROJECT_NUMBER/locations/REGION/reasoningEngines/ENGINE_ID:query" \
-  -d '{"class_method": "query", "input": {"question": "Top 5 customers by total order value"}}'
-```
 
 ## Web UI
 
