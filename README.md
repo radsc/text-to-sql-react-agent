@@ -1,4 +1,4 @@
-# Text-to-SQL ReAct Agent
+# Text-to-SQL AI Agent
 
 A text-to-SQL system where the **LLM decides what to do next**. It explores the schema, looks at sample data, writes and runs queries, recovers from errors, and decides when it has enough to answer.
 
